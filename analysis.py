@@ -27,8 +27,6 @@ You are an AI financial analyst and trader designed to extract actionable intell
 6.  **Bearish_Intensity**: Measure the level of bearishness on a scale from 1 (no bearish signals) to 7 (extremely bearish).
 7.  **Predicted_Impact_Score**: Rate the likely short-term price impact on a scale from -5 (strongly negative) to +5 (strongly positive). Return an integer.
 8.  **Relevance_For_Trading**: Rate on a scale from 1 (not relevant) to 7 (extremely relevant) how useful this information is for making an immediate trading execution.
-9.  **Primary_Ticker**: The single US-listed stock ticker this text is most directly about, in uppercase (e.g. "TSLA", "AAPL"). If the text is about the broad market, a sector, or no identifiable listed company, return an empty string "". Never guess a ticker you are not confident about, and never return an index like SPX or an ETF unless the text names it directly.
-10. **Ticker_Confidence**: How confident you are in Primary_Ticker, on a scale from 1 (guessing) to 7 (the company is named explicitly). Return 1 if Primary_Ticker is empty.
 
 Ensure your response is a valid JSON object containing only these keys and their corresponding extracted values. Do not include any other text or formatting outside the JSON object.
 """
@@ -105,15 +103,8 @@ def analyze_text(text, model_name=DEFAULT_MODEL):
         except (TypeError, ValueError):
             return default
 
-    # Ticker: uppercase, letters only, 1-5 chars. Anything else becomes "".
-    ticker = str(parsed.get("Primary_Ticker") or "").strip().upper()
-    if not re.fullmatch(r"[A-Z]{1,5}", ticker):
-        ticker = ""
-
     # Flat keys. Bubble's API Connector handles flat JSON far better than nested.
     return {
-        "ticker": ticker,
-        "ticker_confidence": num("Ticker_Confidence", 1),
         "action_required": parsed.get("Action_Required", "No"),
         "market_sentiment": parsed.get("Market_Sentiment", "Neutral"),
         "mentions_macro_risks": parsed.get("Mentions_Macro_Risks", "No"),
