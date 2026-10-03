@@ -45,21 +45,33 @@ turn into a mess of sub-types.
 
 ```bash
 pip install -r requirements.txt
-python -m textblob.download_corpora lite
 export OPENROUTER_API_KEY=sk-or-...
 export API_SECRET=pick-any-random-string
 uvicorn main:app --reload
 ```
 
+No NLTK corpora download is needed. TextBlob's `.sentiment.polarity` uses the
+bundled pattern analyzer, not an NLTK corpus. (Verified by deleting `nltk_data`
+and re-running.) You would only need `python -m textblob.download_corpora lite`
+if you later use noun phrase extraction or POS tagging.
+
 Then open http://127.0.0.1:8000/docs for an interactive test page.
 
 ## Deploy to Render
 
-1. Push this folder to a GitHub repo.
-2. Render → New → Web Service → connect the repo.
-3. Build command: `pip install -r requirements.txt && python -m textblob.download_corpora lite`
-4. Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-5. Environment variables: `OPENROUTER_API_KEY` and `API_SECRET`.
+Render → New → Web Service → connect this repo, then:
+
+- Build command: `pip install -r requirements.txt`
+- Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Instance type: Free
+- Environment variables: `OPENROUTER_API_KEY` and `API_SECRET`
+
+Render auto-detects the build command but usually does NOT get the start
+command right, so type that one in by hand.
+
+`render.yaml` only configures the service automatically through Render's
+**Blueprint** flow (New → Blueprint). The ordinary New → Web Service flow
+ignores it.
 
 Free tier sleeps after ~15 min idle, so the first call after a quiet spell
 takes 30–50s. Fine for a demo, bad during a live walkthrough. Ping it on a
